@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -34,6 +35,9 @@ public class HomeController {
 
 	@Autowired
 	private ServicoRepository servicoRepository;
+
+	@Autowired
+	private PasswordEncoder passwordEncoder;
 
 	private ModelAndView view(String viewName) {
 		return new ModelAndView(viewName);
@@ -98,6 +102,7 @@ public class HomeController {
 	@PostMapping("/cadastro-funcionario")
 	public ModelAndView cadastroFuncionario(@ModelAttribute Funcionario funcionario) {
 
+		funcionario.setSenha(passwordEncoder.encode(funcionario.getSenha()));
 		funcionarioRepository.save(funcionario);
 		return view("redirect:/sucesso-cadastro");
 	}
@@ -150,14 +155,6 @@ public class HomeController {
 	@GetMapping("/login")
 	public ModelAndView login () {
 		return view("login");
-	}
-
-	@PostMapping("/valida-login")
-	public ModelAndView validaLogin (@ModelAttribute Funcionario funcionario) {
-
-		logger.debug("Tentativa de login recebida para o CPF {}", funcionario.getCpf());
-
-		return view("redirect:/orderAdmin");
 	}
 
 	@GetMapping("/funcionarios")

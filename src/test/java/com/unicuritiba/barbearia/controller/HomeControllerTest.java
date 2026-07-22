@@ -12,6 +12,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.unicuritiba.barbearia.model.Agendamento;
@@ -32,6 +33,9 @@ class HomeControllerTest {
 
 	@Mock
 	private ServicoRepository servicoRepository;
+
+	@Mock
+	private PasswordEncoder passwordEncoder;
 
 	@InjectMocks
 	private HomeController controller;
@@ -82,12 +86,15 @@ class HomeControllerTest {
 	}
 
 	@Test
-	void cadastroFuncionarioShouldSaveAndRedirect() {
+	void cadastroFuncionarioShouldHashPasswordSaveAndRedirect() {
 		Funcionario funcionario = new Funcionario();
+		funcionario.setSenha("plain");
+		when(passwordEncoder.encode("plain")).thenReturn("hashed");
 
 		ModelAndView mav = controller.cadastroFuncionario(funcionario);
 
 		verify(funcionarioRepository).save(funcionario);
+		assertThat(funcionario.getSenha()).isEqualTo("hashed");
 		assertThat(mav.getViewName()).isEqualTo("redirect:/sucesso-cadastro");
 	}
 
@@ -147,17 +154,6 @@ class HomeControllerTest {
 	@Test
 	void loginShouldReturnLoginView() {
 		assertThat(controller.login().getViewName()).isEqualTo("login");
-	}
-
-	@Test
-	void validaLoginShouldRedirectToOrderAdmin() {
-		Funcionario funcionario = new Funcionario();
-		funcionario.setCpf("12345678900");
-		funcionario.setSenha("secret");
-
-		ModelAndView mav = controller.validaLogin(funcionario);
-
-		assertThat(mav.getViewName()).isEqualTo("redirect:/orderAdmin");
 	}
 
 	@Test
