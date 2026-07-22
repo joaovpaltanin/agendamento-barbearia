@@ -109,6 +109,8 @@ class HomeControllerTest {
 
 	@Test
 	void deleteAgendamentoShouldDeleteByIdAndRedirect() {
+		when(agendamentoRepository.existsById(7L)).thenReturn(true);
+
 		ModelAndView mav = controller.deleteAgendamento(7);
 
 		ArgumentCaptor<Long> captor = ArgumentCaptor.forClass(Long.class);
@@ -171,6 +173,8 @@ class HomeControllerTest {
 
 	@Test
 	void deleteFuncionarioShouldDeleteByIdAndRedirect() {
+		when(funcionarioRepository.existsById(4L)).thenReturn(true);
+
 		ModelAndView mav = controller.deleteFuncionario(4);
 
 		ArgumentCaptor<Long> captor = ArgumentCaptor.forClass(Long.class);
@@ -210,6 +214,8 @@ class HomeControllerTest {
 
 	@Test
 	void deleteServicoShouldDeleteByIdAndRedirect() {
+		when(servicoRepository.existsById(9L)).thenReturn(true);
+
 		ModelAndView mav = controller.deleteServico(9);
 
 		ArgumentCaptor<Long> captor = ArgumentCaptor.forClass(Long.class);

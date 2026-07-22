@@ -2,6 +2,8 @@ package com.unicuritiba.barbearia.controller;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Controller;
@@ -22,6 +24,8 @@ import com.unicuritiba.barbearia.repository.ServicoRepository;
 @Controller
 public class HomeController {
 
+	private static final Logger logger = LoggerFactory.getLogger(HomeController.class);
+
 	@Autowired
 	private FuncionarioRepository funcionarioRepository;
 
@@ -35,9 +39,22 @@ public class HomeController {
 		return new ModelAndView(viewName);
 	}
 
-	private ModelAndView deleteAndRedirect(JpaRepository<?, Long> repository, Integer id, String redirectView) {
-		repository.deleteById(Long.valueOf(id));
-		return new ModelAndView(redirectView);
+	private ModelAndView deleteAndRedirect(JpaRepository<?, Long> repository, Integer id, String entidade,
+			String redirectView) {
+		if (id == null) {
+			logger.warn("Requisição de exclusão de {} sem id informado; ignorando", entidade);
+			return view(redirectView);
+		}
+
+		Long entidadeId = Long.valueOf(id);
+		if (!repository.existsById(entidadeId)) {
+			logger.warn("Tentativa de excluir {} inexistente (id={}); ignorando", entidade, entidadeId);
+			return view(redirectView);
+		}
+
+		repository.deleteById(entidadeId);
+		logger.info("{} excluído com sucesso (id={})", entidade, entidadeId);
+		return view(redirectView);
 	}
 
 	@GetMapping("/")
@@ -103,7 +120,7 @@ public class HomeController {
 
 	@PostMapping("/deleta-agendamento")
 	public ModelAndView deleteAgendamento (@RequestParam(value = "id", required = false) Integer id) {
-		return deleteAndRedirect(agendamentoRepository, id, "redirect:/orderAdmin");
+		return deleteAndRedirect(agendamentoRepository, id, "agendamento", "redirect:/orderAdmin");
 	}
 
 	@GetMapping("/agenda")
@@ -138,8 +155,7 @@ public class HomeController {
 	@PostMapping("/valida-login")
 	public ModelAndView validaLogin (@ModelAttribute Funcionario funcionario) {
 
-		System.out.println(funcionario.getCpf());
-		System.out.println(funcionario.getSenha());
+		logger.debug("Tentativa de login recebida para o CPF {}", funcionario.getCpf());
 
 		return view("redirect:/orderAdmin");
 	}
@@ -157,7 +173,7 @@ public class HomeController {
 
 	@PostMapping("/deleta-funcionario")
 	public ModelAndView deleteFuncionario (@RequestParam(value = "id", required = false) Integer id) {
-		return deleteAndRedirect(funcionarioRepository, id, "redirect:/funcionarios");
+		return deleteAndRedirect(funcionarioRepository, id, "funcionario", "redirect:/funcionarios");
 	}
 
 	@GetMapping("/servicos")
@@ -187,7 +203,7 @@ public class HomeController {
 
 	@PostMapping("/deleta-servico")
 	public ModelAndView deleteServico (@RequestParam(value = "id", required = false) Integer id) {
-		return deleteAndRedirect(servicoRepository, id, "redirect:/servicos");
+		return deleteAndRedirect(servicoRepository, id, "servico", "redirect:/servicos");
 	}
 
 }
